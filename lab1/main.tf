@@ -45,17 +45,17 @@ resource "aws_subnet" "public_subnets" {
 
 #Create route tables for public and private subnets 
 resource "aws_route_table" "public_route_table" {
-vpc_id = aws_vpc.vpc.id
+  vpc_id = aws_vpc.vpc.id
 
-route {
-  cidr_block = "0.0.0.0/0"
-  gateway_id = aws_internet_gateway.internet_gateway.id
-  
-  #nat_gateway_id = aws_nat_gateway.nat_gateway.id
-    }
-tags = {
-  Name      = "demo_public_rtb"
-  Terraform = "true"
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.internet_gateway.id
+
+    #nat_gateway_id = aws_nat_gateway.nat_gateway.id
+  }
+  tags = {
+    Name      = "demo_public_rtb"
+    Terraform = "true"
   }
 }
 
@@ -107,5 +107,29 @@ resource "aws_nat_gateway" "nat_gateway" {
   subnet_id     = aws_subnet.public_subnets["public_subnet_1"].id
   tags = {
     Name = "demo_nat_gateway"
+  }
+}
+
+resource "aws_instance" "web" {
+  ami                    = "ami-0bef6cc322bfff646"
+  instance_type          = "t2.micro"
+  subnet_id              = "subnet-037f04ee96cf1799d"
+  vpc_security_group_ids = ["sg-05c35e0082de6c7e1"]
+
+  tags = {
+    "Terraform_proj4" = "True"
+
+  }
+}
+
+resource "aws_subnet" "variables-subnet" {
+  vpc_id                  = aws_vpc.vpc.id
+  cidr_block              = var.variables_sub_cidr
+  availability_zone       = var.variables_sub_az
+  map_public_ip_on_launch = var.variables_sub_auto_ip
+
+  tags = {
+    Name      = "sub-variables-${var.variables_sub_az}"
+    Terraform = "true"
   }
 }
